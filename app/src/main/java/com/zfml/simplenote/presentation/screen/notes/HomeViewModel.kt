@@ -1,5 +1,6 @@
 package com.zfml.simplenote.presentation.screen.notes
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.focus.FocusState
@@ -32,14 +33,14 @@ class HomeViewModel @Inject constructor(
 
 
     init {
-        fetchAllNotes()
+        getAllNotes()
     }
 
     fun closeSearch() {
         _searchState.value = _searchState.value.copy(
             isClosed = true,
             isFocus = false,
-
+            searchQuery = ""
             )
     }
 
@@ -53,28 +54,23 @@ class HomeViewModel @Inject constructor(
         _searchState.value = _searchState.value.copy(
             searchQuery = searchQuery
         )
+        getAllFilterNotes(searchQuery = searchQuery.trim())
+    }
+
+    fun getAllFilterNotes(searchQuery: String) {
         if (searchQuery.isNotBlank()) {
-            getAllNotesBySearchQuery(searchQuery = searchQuery)
-        } else {
-            getAllNotes()
-        }
-
-
-    }
-
-
-    private fun fetchAllNotes() {
-        if (searchState.value.isFocus) {
-            getAllNotesBySearchQuery(searchQuery = searchState.value.searchQuery)
+            getAllNotesBySearchQuery(searchQuery = searchQuery.trim())
         } else {
             getAllNotes()
         }
     }
+
+
 
     private fun getAllNotesBySearchQuery(searchQuery: String) {
         getAllNotesJob?.cancel()
         searchNotesJob = viewModelScope.launch {
-            userCases.searchNote(searchQuery).collect { notes ->
+            userCases.searchNote(searchQuery.trim()).collect { notes ->
                 _notesUiState.value = NotesUiState.Success(notes)
             }
         }
@@ -82,11 +78,13 @@ class HomeViewModel @Inject constructor(
 
     private fun getAllNotes() {
         searchNotesJob?.cancel()
-        getAllNotesJob = viewModelScope.launch {
-            userCases.getNotes().collect { notes ->
-                _notesUiState.value = NotesUiState.Success(notes)
+
+            getAllNotesJob = viewModelScope.launch {
+                userCases.getNotes().collect { notes ->
+                    _notesUiState.value = NotesUiState.Success(notes)
+                }
             }
-        }
+
     }
 
 

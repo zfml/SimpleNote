@@ -3,6 +3,7 @@ package com.zfml.simplenote.presentation.screen.notes
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,9 +30,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
@@ -55,6 +60,9 @@ fun HomeScreen(
 
     val searchUiState by viewModel.searchState
     val focusManger = LocalFocusManager.current
+    LaunchedEffect(key1 = true ) {
+        viewModel.getAllFilterNotes(searchUiState.searchQuery.trim())
+    }
 
     Scaffold(
         topBar = {
@@ -68,7 +76,10 @@ fun HomeScreen(
             })
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = navigateToWriteScreen) {
+            FloatingActionButton(onClick = {
+                navigateToWriteScreen()
+            }
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Icon")
             }
         },
@@ -101,7 +112,7 @@ fun HomeScreen(
                             },
                             placeholder = {
                                 Text(
-                                    text = "Search your notes"
+                                    text =  "Search your notes"
                                 )
                             },
                             leadingIcon = {
@@ -111,7 +122,7 @@ fun HomeScreen(
                                 )
                             },
                             trailingIcon = {
-                                if (searchUiState.isFocus) {
+                                if (searchUiState.isFocus  || searchUiState.searchQuery.isNotEmpty()) {
                                     IconButton(onClick = {
                                         viewModel.closeSearch()
                                         focusManger.clearFocus()

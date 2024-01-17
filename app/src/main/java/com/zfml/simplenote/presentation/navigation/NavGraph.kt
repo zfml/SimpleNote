@@ -33,7 +33,7 @@ fun SetUpNavGraph(
         )
         writeRoute(
             navigateToHome = {
-                navController.navigateUp()
+                navController.popBackStack()
             }
         )
     }
